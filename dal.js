@@ -1,16 +1,56 @@
+require('dotenv').config()
 const PouchDB = require('pouchdb')
 PouchDB.plugin(require('pouchdb-find'))
+const db = new PouchDB(process.env.COUCHDB_URL + process.env.COUCHDB_NAME)
+const instrumentPKGenerator = require('./lib/build-primary-key')
+const { assoc, pathOr } = require('ramda')
 
 //////////////////////
-//      TEST
+//   Instruments
 //////////////////////
-const test = (callback) => {
- callback(null, "dal is ok.")
+
+const createInstrument = (instrument, callback) => {
+  const category = pathOr('', ['category'], instrument)
+  const name = pathOr('', ['name'], instrument)
+  const pk = instrumentPKGenerator('instument_')(category)(name)
+  console.log('pk:', pk)
+  instrument = assoc('_id', pk, instrument)
+  instrument = assoc('type', 'instrument', instrument)
+  createDoc(instrument, callback)
 }
 
+const getInstrument = (instrumentId, callback) => {
+  db.get(instrumentId, function(err, doc) {
+    if (err) return callback(err)
+    callback(null, doc)
+  })
+}
+
+const listInstruments = (limit, callback) => {
+  find({ selector: { type: 'instrument' }, limit }, function(err, data) {
+    if (err) return callback(err)
+    callback(null, data.docs)
+  })
+}
+
+//////////////////////
+//   Helper/Export
+//////////////////////
+
+function createDoc(doc, callback) {
+  console.log('createDoc', doc)
+  db.put(doc).then(res => callback(null, res)).catch(err => callback(err))
+}
+
+function find(query, cb) {
+  console.log('query', JSON.stringify(query, null, 2))
+  query ? db.find(query, cb) : cb(null, [])
+}
 
 const dal = {
-  test
+  listInstruments,
+  getInstrument,
+  createInstrument
 }
 
 module.exports = dal
