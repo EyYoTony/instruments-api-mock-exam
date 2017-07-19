@@ -61,7 +61,7 @@ app.delete('/instruments/:id', function(req, res, next) {
   })
 })
 
-// LIST -    GET /instruments
+// LIST -   GET /instruments
 app.get('/instruments', function(req, res, next) {
   const limit = pathOr(10, ['query', 'limit'], req)
 
