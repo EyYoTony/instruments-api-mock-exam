@@ -19,6 +19,15 @@ const createInstrument = (instrument, callback) => {
   createDoc(instrument, callback)
 }
 
+const updateInstrument = (instrument, callback) => {
+  instrument = assoc('type', 'instrument', instrument)
+  createDoc(instrument, callback)
+}
+
+const deleteInstrument = (instrumentId, callback) => {
+  deleteDoc(instrumentId, callback)
+}
+
 const getInstrument = (instrumentId, callback) => {
   db.get(instrumentId, function(err, doc) {
     if (err) return callback(err)
@@ -37,6 +46,20 @@ const listInstruments = (limit, callback) => {
 //   Helper/Export
 //////////////////////
 
+function deleteDoc(id, callback) {
+  db
+    .get(id)
+    .then(function(doc) {
+      return db.remove(doc)
+    })
+    .then(function(result) {
+      callback(null, result)
+    })
+    .catch(function(err) {
+      callback(err)
+    })
+}
+
 function createDoc(doc, callback) {
   console.log('createDoc', doc)
   db.put(doc).then(res => callback(null, res)).catch(err => callback(err))
@@ -50,7 +73,9 @@ function find(query, cb) {
 const dal = {
   listInstruments,
   getInstrument,
-  createInstrument
+  createInstrument,
+  updateInstrument,
+  deleteInstrument
 }
 
 module.exports = dal
