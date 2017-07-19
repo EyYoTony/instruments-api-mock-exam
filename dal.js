@@ -3,7 +3,7 @@ const PouchDB = require('pouchdb')
 PouchDB.plugin(require('pouchdb-find'))
 const db = new PouchDB(process.env.COUCHDB_URL + process.env.COUCHDB_NAME)
 const instrumentPKGenerator = require('./lib/build-primary-key')
-const { assoc, pathOr } = require('ramda')
+const { assoc, pathOr, split, head, last } = require('ramda')
 
 //////////////////////
 //   Instruments
@@ -35,9 +35,15 @@ const getInstrument = (instrumentId, callback) => {
   })
 }
 
-const listInstruments = (limit, lastItem, callback) => {
+const listInstruments = (limit, lastItem, filter, callback) => {
   var query = {}
-  if (lastItem) {
+  if (filter) {
+    const arrFilter = split(':', filter)
+    const filterField = head(arrFilter)
+    const filterValue = last(arrFilter)
+    const selectorValue = assoc(filterField, filterValue, {})
+    query = { selector: selectorValue, limit }
+  } else if (lastItem) {
     query = { selector: { _id: { $gt: lastItem }, type: 'instrument' }, limit }
   } else {
     query = { selector: { _id: { $gte: null }, type: 'instrument' }, limit }
