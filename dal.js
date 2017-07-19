@@ -35,8 +35,15 @@ const getInstrument = (instrumentId, callback) => {
   })
 }
 
-const listInstruments = (limit, callback) => {
-  find({ selector: { type: 'instrument' }, limit }, function(err, data) {
+const listInstruments = (limit, lastItem, callback) => {
+  var query = {}
+  if (lastItem) {
+    query = { selector: { _id: { $gt: lastItem }, type: 'instrument' }, limit }
+  } else {
+    query = { selector: { _id: { $gte: null }, type: 'instrument' }, limit }
+  }
+
+  find(query, function(err, data) {
     if (err) return callback(err)
     callback(null, data.docs)
   })

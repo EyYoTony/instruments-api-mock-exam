@@ -64,8 +64,8 @@ app.delete('/instruments/:id', function(req, res, next) {
 // LIST -   GET /instruments
 app.get('/instruments', function(req, res, next) {
   const limit = pathOr(10, ['query', 'limit'], req)
-
-  dal.listInstruments(Number(limit), function(err, data) {
+  const lastItem = pathOr(null, ['query', 'lastItem'], req)
+  dal.listInstruments(Number(limit), lastItem, function(err, data) {
     if (err) return next(new HTTPError(err.status, err.message, err))
     res.status(200).send(data)
   })
